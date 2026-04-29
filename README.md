@@ -2,6 +2,19 @@
 
 > *Verity tells you the truth about your app.*
 
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.6%2B-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![pnpm](https://img.shields.io/badge/pnpm-9%2B-F69220?style=for-the-badge&logo=pnpm&logoColor=white)](https://pnpm.io/)
+[![Biome](https://img.shields.io/badge/Biome-Lint%20%2B%20Format-60A5FA?style=for-the-badge&logo=biome&logoColor=white)](https://biomejs.dev/)
+[![Playwright](https://img.shields.io/badge/Playwright-Chromium-2EAD33?style=for-the-badge&logo=playwright&logoColor=white)](https://playwright.dev/)
+[![Anthropic](https://img.shields.io/badge/Anthropic-Claude-D97757?style=for-the-badge&logo=anthropic&logoColor=white)](https://www.anthropic.com/)
+[![OpenAI](https://img.shields.io/badge/OpenAI-Compatible-412991?style=for-the-badge&logo=openai&logoColor=white)](https://platform.openai.com/)
+[![Ollama](https://img.shields.io/badge/Ollama-Local%20Models-000000?style=for-the-badge&logo=ollama&logoColor=white)](https://ollama.com/)
+[![Express](https://img.shields.io/badge/Express-4-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
+[![SQLite](https://img.shields.io/badge/SQLite-Run%20history-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
+[![GitHub Webhooks](https://img.shields.io/badge/GitHub-Webhooks-181717?style=for-the-badge&logo=github&logoColor=white)](https://docs.github.com/en/webhooks)
+[![License: MIT](https://img.shields.io/badge/License-MIT-22C55E?style=for-the-badge)](LICENSE)
+
 **Model-agnostic AI-powered UI automation. Write tests in plain English. Trigger them with GitHub webhooks. Get comprehensive HTML reports with screenshots, AI reasoning, and pass/fail verdicts.**
 
 Works with Anthropic Claude, OpenAI GPT, and any OpenAI-compatible endpoint — including local models via [Ollama](https://ollama.com), LM Studio, vLLM, or llama.cpp.
@@ -38,27 +51,29 @@ That's it. No selectors, no waits, no element IDs. The agent figures it out from
 - **Vision-driven** — Every action returns a screenshot to Claude, who verifies the result before the next step.
 - **Webhook triggers** — GitHub `push` and `pull_request` events route to spec sets via tags (`smoke`, `pr`).
 - **Manual API** — `POST /runs {"specId": "..."}` to fire a run.
-- **CLI** — `npm test specs/login.spec.md` for local runs.
+- **CLI** — `pnpm test specs/login.spec.md` for local runs.
 - **Comprehensive reports** — Per-step screenshots, AI reasoning traces, expectation verification, token usage. Self-contained HTML.
 - **Persistent history** — SQLite-backed run database with a built-in dashboard at `/`.
 - **Prompt caching** — System prompt and tool definitions cached across runs for cost efficiency.
 
 ## Quick start
 
+Requires Node.js 20+ and [pnpm](https://pnpm.io/) (`corepack enable pnpm`).
+
 ```bash
 # 1. Install
-npm install
-npx playwright install chromium
+pnpm install
+pnpm install-browsers   # downloads Chromium
 
 # 2. Configure
 cp .env.example .env
-# Edit .env and set ANTHROPIC_API_KEY
+# Edit .env and set ANTHROPIC_API_KEY (or LLM_PROVIDER=openai with OPENAI_API_KEY)
 
 # 3. Run a sample test
-npm test specs/example-login.spec.md
+pnpm test specs/example-login.spec.md
 
 # 4. Or start the server
-npm run server
+pnpm server
 # → Dashboard: http://localhost:3000
 ```
 
@@ -97,9 +112,9 @@ The frontmatter (`name`, `baseUrl`, `tags`) is optional. Steps and expectations 
 ### Via CLI
 
 ```bash
-npm test specs/login.spec.md                          # one spec
-npm test -- list                                      # list specs
-npm test -- all --base-url https://staging.example.com  # all specs
+pnpm test specs/login.spec.md                          # one spec
+pnpm test list                                         # list specs
+pnpm test all --base-url https://staging.example.com   # all specs
 ```
 
 ### Via API (manual trigger)
@@ -235,6 +250,25 @@ reports/                     # Generated HTML reports
 | `DATA_DIR`               | `./data`                         | DB + screenshots                                  |
 | `REPORTS_DIR`            | `./reports`                      | Generated reports                                 |
 | `SPECS_DIR`              | `./specs`                        | Test specs                                        |
+
+## Development
+
+```bash
+pnpm typecheck       # tsc --noEmit
+pnpm check           # Biome: lint + format + import-organize check
+pnpm check:fix       # Biome: auto-fix everything safe
+pnpm lint            # Biome: lint only
+pnpm format          # Biome: format only
+pnpm lint:md         # markdownlint-cli2 over all *.md
+pnpm lint:md:fix     # markdownlint-cli2 with --fix
+pnpm ci              # Full local CI: typecheck + biome check + markdownlint
+```
+
+Tooling is wired to:
+
+- **[Biome](https://biomejs.dev/)** — single binary for lint, format, and import organization. Replaces ESLint + Prettier. Config in `biome.json`.
+- **[markdownlint-cli2](https://github.com/DavidAnson/markdownlint-cli2)** — markdown style consistency. Config in `.markdownlint-cli2.jsonc`.
+- **[pnpm](https://pnpm.io/)** — fast, disk-efficient package manager. Locked at `pnpm@9.x` via the `packageManager` field; `corepack` will pick the right version automatically.
 
 ## Tips for good specs
 

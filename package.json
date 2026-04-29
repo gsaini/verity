@@ -4,6 +4,10 @@
   "description": "Verity tells you the truth about your app. Plain-English UI tests, model-agnostic AI agent, GitHub webhook triggers, comprehensive HTML reports.",
   "type": "module",
   "main": "dist/server.js",
+  "packageManager": "pnpm@9.15.9",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "build": "tsc",
     "start": "node dist/server.js",
@@ -11,7 +15,16 @@
     "server": "tsx src/server.ts",
     "test": "tsx src/cli.ts",
     "install-browsers": "playwright install chromium",
-    "init-db": "tsx src/storage/db.ts"
+    "init-db": "tsx src/storage/db.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome lint .",
+    "lint:fix": "biome lint --write .",
+    "format": "biome format --write .",
+    "check": "biome check .",
+    "check:fix": "biome check --write .",
+    "lint:md": "markdownlint-cli2 \"**/*.md\"",
+    "lint:md:fix": "markdownlint-cli2 --fix \"**/*.md\"",
+    "ci": "pnpm typecheck && pnpm check && pnpm lint:md"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.91.1",
@@ -24,9 +37,11 @@
     "yaml": "^2.6.0"
   },
   "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
     "@types/better-sqlite3": "^7.6.11",
     "@types/express": "^5.0.0",
     "@types/node": "^22.9.0",
+    "markdownlint-cli2": "^0.15.0",
     "tsx": "^4.19.2",
     "typescript": "^5.6.3"
   }
