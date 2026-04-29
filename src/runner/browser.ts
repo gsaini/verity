@@ -33,7 +33,7 @@ export class BrowserSession {
     this.context = await this.browser.newContext({
       viewport: { width: 1280, height: 800 },
       userAgent:
-        "Mozilla/5.0 (AI-UI-Tester) Chrome/120.0 Safari/537.36",
+        "Mozilla/5.0 (Verity) Chrome/120.0 Safari/537.36",
     });
     this.context.setDefaultTimeout(config.browserTimeoutMs);
     this.page = await this.context.newPage();

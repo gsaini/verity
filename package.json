@@ -1,7 +1,7 @@
 {
-  "name": "ai-ui-tester",
+  "name": "verity",
   "version": "0.1.0",
-  "description": "AI-powered UI automation triggered by GitHub webhooks. Write tests in plain English, get comprehensive reports.",
+  "description": "Verity tells you the truth about your app. Plain-English UI tests, model-agnostic AI agent, GitHub webhook triggers, comprehensive HTML reports.",
   "type": "module",
   "main": "dist/server.js",
   "scripts": {

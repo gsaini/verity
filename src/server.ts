@@ -159,7 +159,7 @@ app.get("/", (_req, res) => {
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>AI UI Tester · Dashboard</title>
+<title>Verity · Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
   * { box-sizing: border-box; }
@@ -187,8 +187,8 @@ app.get("/", (_req, res) => {
 <div class="container">
   <header>
     <div>
-      <h1>🤖 AI UI Tester</h1>
-      <div class="sub">Plain-English UI tests · Powered by Claude Opus 4.7 + Playwright</div>
+      <h1>Verity</h1>
+      <div class="sub">Plain-English UI tests · model-agnostic AI agent · Playwright</div>
     </div>
   </header>
 
@@ -235,7 +235,7 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
 
 const port = config.port;
 app.listen(port, config.host, () => {
-  console.log(`AI UI Tester listening on http://${config.host}:${port}`);
+  console.log(`Verity listening on http://${config.host}:${port}`);
   console.log(`  Dashboard:        http://localhost:${port}/`);
   console.log(`  GitHub webhook:   http://localhost:${port}/webhooks/github`);
   console.log(`  Manual trigger:   POST http://localhost:${port}/runs  {"specId": "..."}`);

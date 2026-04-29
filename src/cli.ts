@@ -4,10 +4,12 @@ import { loadAllSpecs, loadSpecFromFile } from "./specs/loader.js";
 import { runSpec } from "./runner/orchestrator.js";
 
 function printUsage(): void {
-  console.log(`Usage:
-  ai-ui-tester <spec-file-or-id> [--base-url <url>]
-  ai-ui-tester list
-  ai-ui-tester all [--base-url <url>]
+  console.log(`Verity — plain-English UI tests, AI-driven.
+
+Usage:
+  verity <spec-file-or-id> [--base-url <url>]
+  verity list
+  verity all [--base-url <url>]
 
 Examples:
   npm test specs/login.spec.md

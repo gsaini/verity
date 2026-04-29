@@ -1,4 +1,6 @@
-# 🤖 AI UI Tester
+# Verity
+
+> *Verity tells you the truth about your app.*
 
 **Model-agnostic AI-powered UI automation. Write tests in plain English. Trigger them with GitHub webhooks. Get comprehensive HTML reports with screenshots, AI reasoning, and pass/fail verdicts.**
 
