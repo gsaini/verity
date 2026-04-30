@@ -14,7 +14,17 @@ export interface TestSpec {
 
 export interface StepRecord {
   index: number;
-  type: "navigate" | "click" | "fill" | "press_key" | "wait" | "assert" | "screenshot" | "scroll" | "thinking" | "summary";
+  type:
+    | "navigate"
+    | "click"
+    | "fill"
+    | "press_key"
+    | "wait"
+    | "assert"
+    | "screenshot"
+    | "scroll"
+    | "thinking"
+    | "summary";
   description: string;
   input?: Record<string, unknown>;
   result?: string;

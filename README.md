@@ -261,7 +261,7 @@ pnpm lint            # Biome: lint only
 pnpm format          # Biome: format only
 pnpm lint:md         # markdownlint-cli2 over all *.md
 pnpm lint:md:fix     # markdownlint-cli2 with --fix
-pnpm ci              # Full local CI: typecheck + biome check + markdownlint
+pnpm verify          # Full local CI: typecheck + biome check + markdownlint
 ```
 
 Tooling is wired to:

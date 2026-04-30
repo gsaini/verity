@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { ensureDirs } from "./config.js";
-import { loadAllSpecs, loadSpecFromFile } from "./specs/loader.js";
 import { runSpec } from "./runner/orchestrator.js";
+import { loadAllSpecs, loadSpecFromFile } from "./specs/loader.js";
 
 function printUsage(): void {
   console.log(`Verity — plain-English UI tests, AI-driven.
@@ -63,7 +63,9 @@ async function main(): Promise<void> {
       return;
     }
     for (const spec of specs) {
-      console.log(`${spec.id}  →  ${spec.name}  (${spec.steps.length} steps, ${spec.expectations.length} expectations)`);
+      console.log(
+        `${spec.id}  →  ${spec.name}  (${spec.steps.length} steps, ${spec.expectations.length} expectations)`,
+      );
       if (spec.tags?.length) console.log(`   tags: ${spec.tags.join(", ")}`);
     }
     return;
@@ -71,14 +73,16 @@ async function main(): Promise<void> {
 
   if (args.command === "all") {
     const specs = loadAllSpecs();
-    let pass = 0, fail = 0;
+    let pass = 0;
+    let fail = 0;
     for (const spec of specs) {
       console.log(`\n▶ Running: ${spec.name}`);
       const run = await runSpec({
         spec,
         trigger: "cli",
         baseUrlOverride: args.baseUrl,
-        onStepLog: (step) => process.stdout.write(`  · ${step.type}: ${step.description.slice(0, 100)}\n`),
+        onStepLog: (step) =>
+          process.stdout.write(`  · ${step.type}: ${step.description.slice(0, 100)}\n`),
       });
       console.log(`  ${run.status === "passed" ? "✅ PASS" : "❌ FAIL"} — ${run.summary ?? ""}`);
       console.log(`  Report: ${run.reportPath}`);
@@ -90,7 +94,7 @@ async function main(): Promise<void> {
   }
 
   if (args.command === "run" && args.target) {
-    let spec;
+    let spec: import("./types.js").TestSpec | undefined;
     try {
       if (args.target.endsWith(".md") || args.target.includes("/")) {
         spec = loadSpecFromFile(args.target);
@@ -119,7 +123,9 @@ async function main(): Promise<void> {
 
     console.log(`\n${run.status === "passed" ? "✅ PASSED" : "❌ FAILED"}: ${run.summary ?? ""}`);
     if (run.failureReason) console.log(`  Reason: ${run.failureReason}`);
-    console.log(`  Duration: ${run.durationMs}ms · Tokens in/out: ${run.totalInputTokens}/${run.totalOutputTokens} · Cache: ${run.cacheReadTokens ?? 0}`);
+    console.log(
+      `  Duration: ${run.durationMs}ms · Tokens in/out: ${run.totalInputTokens}/${run.totalOutputTokens} · Cache: ${run.cacheReadTokens ?? 0}`,
+    );
     console.log(`  Report: ${run.reportPath}`);
     process.exit(run.status === "passed" ? 0 : 1);
   }

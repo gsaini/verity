@@ -79,7 +79,12 @@ function extractSection(body: string, heading: string): string[] {
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter((line) => line.startsWith("-") || line.startsWith("*") || /^\d+\./.test(line))
-    .map((line) => line.replace(/^[-*]\s*/, "").replace(/^\d+\.\s*/, "").trim())
+    .map((line) =>
+      line
+        .replace(/^[-*]\s*/, "")
+        .replace(/^\d+\.\s*/, "")
+        .trim(),
+    )
     .filter(Boolean);
 }
 

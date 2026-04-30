@@ -1,5 +1,5 @@
-import type { TestSpec, StepRecord } from "../../types.js";
 import type { BrowserSession } from "../../runner/browser.js";
+import type { StepRecord, TestSpec } from "../../types.js";
 
 export interface AgentRunParams {
   spec: TestSpec;

@@ -1,6 +1,6 @@
-import Database from "better-sqlite3";
-import path from "node:path";
 import fs from "node:fs";
+import path from "node:path";
+import Database from "better-sqlite3";
 import { config, ensureDirs } from "../config.js";
 import type { RunRecord, RunStatus, StepRecord } from "../types.js";
 
@@ -160,7 +160,9 @@ export function getRun(id: string): RunRecord | undefined {
 
 export function listRuns(limit = 100): RunRecord[] {
   const db = getDb();
-  const rows = db.prepare("SELECT * FROM runs ORDER BY started_at DESC LIMIT ?").all(limit) as DbRow[];
+  const rows = db
+    .prepare("SELECT * FROM runs ORDER BY started_at DESC LIMIT ?")
+    .all(limit) as DbRow[];
   return rows.map(rowToRun);
 }
 

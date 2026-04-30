@@ -1,11 +1,10 @@
-import express, { type Request, type Response, type NextFunction } from "express";
 import path from "node:path";
-import fs from "node:fs";
+import express, { type Request, type Response, type NextFunction } from "express";
 import { config, ensureDirs } from "./config.js";
-import { handleGithubWebhook, loadSpecByIdOrPath } from "./triggers/github.js";
-import { loadAllSpecs } from "./specs/loader.js";
 import { runSpec } from "./runner/orchestrator.js";
-import { listRuns, getRun } from "./storage/db.js";
+import { loadAllSpecs } from "./specs/loader.js";
+import { getRun, listRuns } from "./storage/db.js";
+import { handleGithubWebhook, loadSpecByIdOrPath } from "./triggers/github.js";
 
 ensureDirs();
 
@@ -47,7 +46,9 @@ app.post("/runs", (req, res, next) => {
     if (runAsync) {
       res.status(202).json({ ok: true, queued: spec.id, name: spec.name });
       runSpec({ spec, trigger: "manual", triggerMeta: { source: "api" }, baseUrlOverride: baseUrl })
-        .then((run) => console.log(`[api] ${run.specName} → ${run.status.toUpperCase()} (${run.id})`))
+        .then((run) =>
+          console.log(`[api] ${run.specName} → ${run.status.toUpperCase()} (${run.id})`),
+        )
         .catch((err) => console.error("Run failed:", err));
       return;
     }
@@ -107,10 +108,11 @@ app.get("/", (_req, res) => {
   const failed = runs.filter((r) => r.status === "failed" || r.status === "error").length;
   const running = runs.filter((r) => r.status === "running").length;
 
-  const escape = (s: string) =>
+  const escapeHtml = (s: string) =>
     s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
-  const fmtDur = (ms?: number) => (ms == null ? "—" : ms < 1000 ? `${ms}ms` : `${(ms / 1000).toFixed(1)}s`);
+  const fmtDur = (ms?: number) =>
+    ms == null ? "—" : ms < 1000 ? `${ms}ms` : `${(ms / 1000).toFixed(1)}s`;
   const fmtTime = (iso: string) => new Date(iso).toLocaleString();
 
   const statusBadge = (s: string) => {
@@ -128,12 +130,12 @@ app.get("/", (_req, res) => {
     .map(
       (r) => `
       <tr>
-        <td><a href="/runs/${r.id}/report" target="_blank">${escape(r.specName)}</a></td>
+        <td><a href="/runs/${r.id}/report" target="_blank">${escapeHtml(r.specName)}</a></td>
         <td>${statusBadge(r.status)}</td>
-        <td>${escape(r.trigger)}</td>
+        <td>${escapeHtml(r.trigger)}</td>
         <td>${fmtDur(r.durationMs)}</td>
-        <td title="${escape(r.startedAt)}">${escape(fmtTime(r.startedAt))}</td>
-        <td>${r.failureReason ? `<span style="color:#fca5a5">${escape(r.failureReason.slice(0, 80))}${r.failureReason.length > 80 ? "…" : ""}</span>` : ""}</td>
+        <td title="${escapeHtml(r.startedAt)}">${escapeHtml(fmtTime(r.startedAt))}</td>
+        <td>${r.failureReason ? `<span style="color:#fca5a5">${escapeHtml(r.failureReason.slice(0, 80))}${r.failureReason.length > 80 ? "…" : ""}</span>` : ""}</td>
       </tr>`,
     )
     .join("");
@@ -142,12 +144,12 @@ app.get("/", (_req, res) => {
     .map(
       (s) => `
       <tr>
-        <td><strong>${escape(s.name)}</strong></td>
-        <td><code>${escape(s.id)}</code></td>
+        <td><strong>${escapeHtml(s.name)}</strong></td>
+        <td><code>${escapeHtml(s.id)}</code></td>
         <td>${s.steps.length} steps · ${s.expectations.length} expectations</td>
-        <td>${(s.tags ?? []).map((t) => `<span style="background:#243056;padding:2px 8px;border-radius:4px;font-size:11px;margin-right:4px">${escape(t)}</span>`).join("")}</td>
+        <td>${(s.tags ?? []).map((t) => `<span style="background:#243056;padding:2px 8px;border-radius:4px;font-size:11px;margin-right:4px">${escapeHtml(t)}</span>`).join("")}</td>
         <td>
-          <form method="post" action="/runs" onsubmit="event.preventDefault();fetch('/runs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({specId:'${escape(s.id)}'})}).then(r=>r.json()).then(d=>{alert('Queued: '+d.queued);setTimeout(()=>location.reload(),1500)});">
+          <form method="post" action="/runs" onsubmit="event.preventDefault();fetch('/runs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({specId:'${escapeHtml(s.id)}'})}).then(r=>r.json()).then(d=>{alert('Queued: '+d.queued);setTimeout(()=>location.reload(),1500)});">
             <button type="submit" style="background:#5b8cff;color:#fff;border:0;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:600">▶ Run</button>
           </form>
         </td>
@@ -203,7 +205,7 @@ app.get("/", (_req, res) => {
     <h2>Test specs (${specs.length})</h2>
     ${
       specs.length === 0
-        ? `<div class="empty">No specs yet. Drop a markdown file in <code>${escape(config.specsDir)}</code>.</div>`
+        ? `<div class="empty">No specs yet. Drop a markdown file in <code>${escapeHtml(config.specsDir)}</code>.</div>`
         : `<table>
             <thead><tr><th>Name</th><th>ID</th><th>Size</th><th>Tags</th><th></th></tr></thead>
             <tbody>${specRows}</tbody>
@@ -241,9 +243,17 @@ app.listen(port, config.host, () => {
   console.log(`  Manual trigger:   POST http://localhost:${port}/runs  {"specId": "..."}`);
   console.log(`  Provider:         ${config.provider}`);
   if (config.provider === "anthropic" && !config.anthropicApiKey) {
-    console.warn("\n  ⚠️  ANTHROPIC_API_KEY is not set. Runs will fail until you configure it in .env.");
+    console.warn(
+      "\n  ⚠️  ANTHROPIC_API_KEY is not set. Runs will fail until you configure it in .env.",
+    );
   }
-  if (config.provider === "openai" && !config.openaiApiKey && config.openaiBaseUrl.includes("openai.com")) {
-    console.warn("\n  ⚠️  OPENAI_API_KEY is not set. Runs will fail until you configure it in .env.");
+  if (
+    config.provider === "openai" &&
+    !config.openaiApiKey &&
+    config.openaiBaseUrl.includes("openai.com")
+  ) {
+    console.warn(
+      "\n  ⚠️  OPENAI_API_KEY is not set. Runs will fail until you configure it in .env.",
+    );
   }
 });

@@ -1,15 +1,19 @@
 import crypto from "node:crypto";
 import type { Request, Response } from "express";
 import { config } from "../config.js";
-import { loadAllSpecs, loadSpecFromFile } from "../specs/loader.js";
 import { runSpec } from "../runner/orchestrator.js";
+import { loadAllSpecs, loadSpecFromFile } from "../specs/loader.js";
 import type { TestSpec } from "../types.js";
 
 /**
  * Verify the X-Hub-Signature-256 header on a GitHub webhook request.
  * Constant-time comparison.
  */
-export function verifyGitHubSignature(rawBody: Buffer, signatureHeader: string | undefined, secret: string): boolean {
+export function verifyGitHubSignature(
+  rawBody: Buffer,
+  signatureHeader: string | undefined,
+  secret: string,
+): boolean {
   if (!signatureHeader || !secret) return false;
   const [scheme, sig] = signatureHeader.split("=");
   if (scheme !== "sha256" || !sig) return false;
@@ -26,7 +30,12 @@ interface GithubPushBody {
   repository?: { full_name?: string; html_url?: string };
   ref?: string;
   head_commit?: { id?: string; message?: string; url?: string; author?: { name?: string } };
-  pull_request?: { html_url?: string; head?: { ref?: string; sha?: string }; title?: string; number?: number };
+  pull_request?: {
+    html_url?: string;
+    head?: { ref?: string; sha?: string };
+    title?: string;
+    number?: number;
+  };
   action?: string;
 }
 
@@ -107,9 +116,7 @@ export async function handleGithubWebhook(req: Request, res: Response): Promise<
       },
     })
       .then((run) => {
-        console.log(
-          `[github:${event}] ${run.specName} → ${run.status.toUpperCase()} (${run.id})`,
-        );
+        console.log(`[github:${event}] ${run.specName} → ${run.status.toUpperCase()} (${run.id})`);
       })
       .catch((err) => {
         console.error(`Run failed for ${spec.name}:`, err);

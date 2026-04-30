@@ -1,11 +1,11 @@
-import path from "node:path";
 import crypto from "node:crypto";
-import { config, ensureDirs } from "../config.js";
-import type { TestSpec, RunRecord, RunStatus, StepRecord } from "../types.js";
-import { BrowserSession } from "./browser.js";
+import path from "node:path";
 import { runAgent } from "../agent/executor.js";
+import { config, ensureDirs } from "../config.js";
 import { generateHtmlReport } from "../reports/generator.js";
 import { insertRun, updateRun } from "../storage/db.js";
+import type { RunRecord, RunStatus, StepRecord, TestSpec } from "../types.js";
+import { BrowserSession } from "./browser.js";
 
 export interface RunOptions {
   spec: TestSpec;

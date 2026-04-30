@@ -1,6 +1,6 @@
 import type Anthropic from "@anthropic-ai/sdk";
 import type { Page } from "playwright";
-import { BrowserSession } from "../runner/browser.js";
+import type { BrowserSession } from "../runner/browser.js";
 
 export interface ToolContext {
   session: BrowserSession;
@@ -73,7 +73,10 @@ export const browserTools: Anthropic.Tool[] = [
     input_schema: {
       type: "object",
       properties: {
-        target: { type: "string", description: "Visible label, placeholder, or name of the field." },
+        target: {
+          type: "string",
+          description: "Visible label, placeholder, or name of the field.",
+        },
         value: { type: "string", description: "Text to type into the field." },
         clear: {
           type: "boolean",
@@ -173,7 +176,9 @@ async function findLocator(page: Page, target: string, role?: string, nth = 0) {
   const candidates = [];
 
   if (role && role !== "any") {
-    candidates.push(page.getByRole(role as Parameters<typeof page.getByRole>[0], { name: target, exact: false }));
+    candidates.push(
+      page.getByRole(role as Parameters<typeof page.getByRole>[0], { name: target, exact: false }),
+    );
   }
   // Common interactive roles first
   candidates.push(page.getByRole("button", { name: target, exact: false }));
@@ -218,7 +223,18 @@ export async function executeTool(
   toolName: string,
   input: Record<string, unknown>,
   ctx: ToolContext,
-): Promise<{ result: string; isError: boolean; screenshotPath?: string; finished?: boolean; verdict?: { passed: boolean; summary: string; failureReason?: string; expectationsChecked: string[] } }> {
+): Promise<{
+  result: string;
+  isError: boolean;
+  screenshotPath?: string;
+  finished?: boolean;
+  verdict?: {
+    passed: boolean;
+    summary: string;
+    failureReason?: string;
+    expectationsChecked: string[];
+  };
+}> {
   const start = Date.now();
   const page = ctx.session.getPage();
   try {
@@ -238,7 +254,11 @@ export async function executeTool(
           pageTitle: snap.title,
           durationMs: Date.now() - start,
         });
-        return { result: `Navigated to ${snap.url}. Page title: "${snap.title}".`, isError: false, screenshotPath: snap.screenshotPath };
+        return {
+          result: `Navigated to ${snap.url}. Page title: "${snap.title}".`,
+          isError: false,
+          screenshotPath: snap.screenshotPath,
+        };
       }
       case "click": {
         const target = String(input.target);
@@ -258,7 +278,11 @@ export async function executeTool(
           pageTitle: snap.title,
           durationMs: Date.now() - start,
         });
-        return { result: `Clicked "${target}". Now at ${snap.url}.`, isError: false, screenshotPath: snap.screenshotPath };
+        return {
+          result: `Clicked "${target}". Now at ${snap.url}.`,
+          isError: false,
+          screenshotPath: snap.screenshotPath,
+        };
       }
       case "fill": {
         const target = String(input.target);
@@ -271,14 +295,18 @@ export async function executeTool(
         const snap = await ctx.session.snapshot(`fill_${target.slice(0, 20)}`);
         ctx.recordStep({
           type: "fill",
-          description: `Filled "${target}" with "${value.length > 60 ? value.slice(0, 60) + "..." : value}"`,
-          input: { target, value: value.length > 200 ? value.slice(0, 200) + "..." : value },
+          description: `Filled "${target}" with "${value.length > 60 ? `${value.slice(0, 60)}...` : value}"`,
+          input: { target, value: value.length > 200 ? `${value.slice(0, 200)}...` : value },
           screenshotPath: snap.screenshotPath,
           pageUrl: snap.url,
           pageTitle: snap.title,
           durationMs: Date.now() - start,
         });
-        return { result: `Filled "${target}".`, isError: false, screenshotPath: snap.screenshotPath };
+        return {
+          result: `Filled "${target}".`,
+          isError: false,
+          screenshotPath: snap.screenshotPath,
+        };
       }
       case "press_key": {
         const key = String(input.key);
@@ -300,7 +328,10 @@ export async function executeTool(
         const ms = typeof input.ms === "number" ? input.ms : undefined;
         const forText = typeof input.for_text === "string" ? input.for_text : undefined;
         if (forText) {
-          await page.getByText(forText, { exact: false }).first().waitFor({ state: "visible", timeout: 15000 });
+          await page
+            .getByText(forText, { exact: false })
+            .first()
+            .waitFor({ state: "visible", timeout: 15000 });
         } else {
           await page.waitForTimeout(ms ?? 1000);
         }
@@ -314,7 +345,7 @@ export async function executeTool(
           pageTitle: snap.title,
           durationMs: Date.now() - start,
         });
-        return { result: `Wait complete.`, isError: false, screenshotPath: snap.screenshotPath };
+        return { result: "Wait complete.", isError: false, screenshotPath: snap.screenshotPath };
       }
       case "scroll": {
         const direction = String(input.direction);
@@ -322,7 +353,8 @@ export async function executeTool(
         if (direction === "down") await page.evaluate((n) => window.scrollBy(0, n), amount);
         else if (direction === "up") await page.evaluate((n) => window.scrollBy(0, -n), amount);
         else if (direction === "top") await page.evaluate(() => window.scrollTo(0, 0));
-        else if (direction === "bottom") await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+        else if (direction === "bottom")
+          await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
         await page.waitForTimeout(300);
         const snap = await ctx.session.snapshot(`scroll_${direction}`);
         ctx.recordStep({
@@ -334,24 +366,33 @@ export async function executeTool(
           pageTitle: snap.title,
           durationMs: Date.now() - start,
         });
-        return { result: `Scrolled ${direction}.`, isError: false, screenshotPath: snap.screenshotPath };
+        return {
+          result: `Scrolled ${direction}.`,
+          isError: false,
+          screenshotPath: snap.screenshotPath,
+        };
       }
       case "observe": {
         const snap = await ctx.session.snapshot("observe");
         ctx.recordStep({
           type: "screenshot",
-          description: `Observed page`,
+          description: "Observed page",
           screenshotPath: snap.screenshotPath,
           pageUrl: snap.url,
           pageTitle: snap.title,
           durationMs: Date.now() - start,
         });
-        return { result: `URL: ${snap.url}\nTitle: ${snap.title}\nAccessibility tree:\n${snap.ariaSnapshot || "(empty)"}`, isError: false, screenshotPath: snap.screenshotPath };
+        return {
+          result: `URL: ${snap.url}\nTitle: ${snap.title}\nAccessibility tree:\n${snap.ariaSnapshot || "(empty)"}`,
+          isError: false,
+          screenshotPath: snap.screenshotPath,
+        };
       }
       case "finish_test": {
         const passed = Boolean(input.passed);
         const summary = String(input.summary ?? "");
-        const failureReason = typeof input.failure_reason === "string" ? input.failure_reason : undefined;
+        const failureReason =
+          typeof input.failure_reason === "string" ? input.failure_reason : undefined;
         const expectationsChecked = Array.isArray(input.expectations_checked)
           ? (input.expectations_checked as unknown[]).map((s) => String(s))
           : [];
@@ -373,7 +414,7 @@ export async function executeTool(
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    let snap;
+    let snap: import("../runner/browser.js").PageSnapshot | undefined;
     try {
       snap = await ctx.session.snapshot(`error_${toolName}`);
     } catch {}

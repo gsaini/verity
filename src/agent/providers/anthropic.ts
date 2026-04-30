@@ -1,9 +1,9 @@
-import Anthropic from "@anthropic-ai/sdk";
 import fs from "node:fs";
+import Anthropic from "@anthropic-ai/sdk";
 import { config } from "../../config.js";
 import type { StepRecord } from "../../types.js";
-import { browserTools, executeTool, type ToolContext } from "../tools.js";
 import { SYSTEM_PROMPT, buildUserPrompt } from "../prompts.js";
+import { type ToolContext, browserTools, executeTool } from "../tools.js";
 import type { AgentRunParams, AgentRunResult, LLMProvider } from "./types.js";
 
 export class AnthropicProvider implements LLMProvider {
@@ -96,13 +96,13 @@ export class AnthropicProvider implements LLMProvider {
           recordStep({
             type: "thinking",
             description:
-              block.thinking.length > 200 ? block.thinking.slice(0, 200) + "..." : block.thinking,
+              block.thinking.length > 200 ? `${block.thinking.slice(0, 200)}...` : block.thinking,
             input: { full: block.thinking },
           });
         } else if (block.type === "text" && block.text.trim()) {
           recordStep({
             type: "thinking",
-            description: block.text.length > 200 ? block.text.slice(0, 200) + "..." : block.text,
+            description: block.text.length > 200 ? `${block.text.slice(0, 200)}...` : block.text,
             input: { full: block.text },
           });
         }

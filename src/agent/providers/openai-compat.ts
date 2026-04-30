@@ -1,9 +1,9 @@
-import OpenAI from "openai";
 import fs from "node:fs";
+import OpenAI from "openai";
 import { config } from "../../config.js";
 import type { StepRecord } from "../../types.js";
-import { browserTools, executeTool, type ToolContext } from "../tools.js";
 import { SYSTEM_PROMPT, buildUserPrompt } from "../prompts.js";
+import { type ToolContext, browserTools, executeTool } from "../tools.js";
 import type { AgentRunParams, AgentRunResult, LLMProvider } from "./types.js";
 
 /**
@@ -116,12 +116,16 @@ export class OpenAICompatProvider implements LLMProvider {
       const assistantMsg = choice.message;
       messages.push(assistantMsg);
 
-      if (assistantMsg.content && typeof assistantMsg.content === "string" && assistantMsg.content.trim()) {
+      if (
+        assistantMsg.content &&
+        typeof assistantMsg.content === "string" &&
+        assistantMsg.content.trim()
+      ) {
         recordStep({
           type: "thinking",
           description:
             assistantMsg.content.length > 200
-              ? assistantMsg.content.slice(0, 200) + "..."
+              ? `${assistantMsg.content.slice(0, 200)}...`
               : assistantMsg.content,
           input: { full: assistantMsg.content },
         });
@@ -158,7 +162,7 @@ export class OpenAICompatProvider implements LLMProvider {
         let input: Record<string, unknown> = {};
         try {
           input = call.function.arguments ? JSON.parse(call.function.arguments) : {};
-        } catch (err) {
+        } catch (_err) {
           input = {};
         }
         const result = await executeTool(call.function.name, input, ctx);

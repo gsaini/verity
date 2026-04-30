@@ -1,6 +1,6 @@
-import { chromium, type Browser, type BrowserContext, type Page } from "playwright";
-import path from "node:path";
 import fs from "node:fs";
+import path from "node:path";
+import { type Browser, type BrowserContext, type Page, chromium } from "playwright";
 import { config } from "../config.js";
 
 export interface PageSnapshot {
@@ -32,8 +32,7 @@ export class BrowserSession {
     this.browser = await chromium.launch({ headless: config.headless });
     this.context = await this.browser.newContext({
       viewport: { width: 1280, height: 800 },
-      userAgent:
-        "Mozilla/5.0 (Verity) Chrome/120.0 Safari/537.36",
+      userAgent: "Mozilla/5.0 (Verity) Chrome/120.0 Safari/537.36",
     });
     this.context.setDefaultTimeout(config.browserTimeoutMs);
     this.page = await this.context.newPage();

@@ -1,21 +1,15 @@
 {
   "config": {
     "default": true,
-    "MD013": false,            // line-length — disabled (long lines OK in our docs)
-    "MD033": false,            // inline HTML — used for badges
-    "MD041": false,            // first line must be top-level heading
+    "MD013": false, // line-length — disabled (long lines OK in our docs)
+    "MD033": false, // inline HTML — used for badges
+    "MD041": false, // first line must be top-level heading
     "MD024": { "siblings_only": true }, // duplicate headings OK in different sections
-    "MD036": false,            // emphasis used as heading
+    "MD036": false, // emphasis used as heading
     "MD007": { "indent": 2 },
-    "MD040": true,             // require language on fenced code blocks
-    "MD032": true              // blanks around lists
+    "MD040": true, // require language on fenced code blocks
+    "MD032": true // blanks around lists
   },
   "globs": ["**/*.md"],
-  "ignores": [
-    "node_modules",
-    "dist",
-    "data",
-    "reports",
-    "CHANGELOG.md"
-  ]
+  "ignores": ["node_modules", "dist", "data", "reports", "CHANGELOG.md"]
 }

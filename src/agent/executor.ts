@@ -10,7 +10,6 @@ function selectProvider(): LLMProvider {
   switch (config.provider) {
     case "openai":
       return new OpenAICompatProvider();
-    case "anthropic":
     default:
       return new AnthropicProvider();
   }
