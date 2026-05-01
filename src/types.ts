@@ -5,6 +5,8 @@ export interface TestSpec {
   name: string;
   description?: string;
   baseUrl?: string;
+  /** Optional provider override from spec frontmatter (anthropic | openai | ollama | groq). */
+  provider?: string;
   steps: string[];
   expectations: string[];
   tags?: string[];

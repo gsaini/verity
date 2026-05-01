@@ -7,14 +7,18 @@ function printUsage(): void {
   console.log(`Verity — plain-English UI tests, AI-driven.
 
 Usage:
-  verity <spec-file-or-id> [--base-url <url>]
+  verity <spec-file-or-id> [--base-url <url>] [--provider <name>]
   verity list
-  verity all [--base-url <url>]
+  verity all [--base-url <url>] [--provider <name>]
+
+Providers: anthropic | openai | ollama | groq
 
 Examples:
-  npm test specs/login.spec.md
-  npm test -- list
-  npm test -- all --base-url https://staging.example.com
+  pnpm test specs/login.spec.md
+  pnpm test specs/login.spec.md --provider ollama
+  pnpm test specs/login.spec.md --provider groq
+  pnpm test list
+  pnpm test all --base-url https://staging.example.com
 `);
 }
 
@@ -22,6 +26,7 @@ interface ParsedArgs {
   command: string;
   target?: string;
   baseUrl?: string;
+  provider?: string;
 }
 
 function parseArgs(argv: string[]): ParsedArgs {
@@ -33,6 +38,8 @@ function parseArgs(argv: string[]): ParsedArgs {
     const a = args[i];
     if (a === "--base-url" || a === "-u") {
       out.baseUrl = args[++i];
+    } else if (a === "--provider" || a === "-p") {
+      out.provider = args[++i];
     } else if (a === "-h" || a === "--help") {
       out.command = "help";
     } else if (positional === 0) {
@@ -81,6 +88,7 @@ async function main(): Promise<void> {
         spec,
         trigger: "cli",
         baseUrlOverride: args.baseUrl,
+        providerOverride: args.provider,
         onStepLog: (step) =>
           process.stdout.write(`  · ${step.type}: ${step.description.slice(0, 100)}\n`),
       });
@@ -110,11 +118,14 @@ async function main(): Promise<void> {
     console.log(`▶ Running: ${spec.name}`);
     console.log(`  Steps: ${spec.steps.length}, expectations: ${spec.expectations.length}`);
     if (args.baseUrl) console.log(`  Base URL override: ${args.baseUrl}`);
+    if (args.provider) console.log(`  Provider override: ${args.provider}`);
+    else if (spec.provider) console.log(`  Provider (from spec): ${spec.provider}`);
 
     const run = await runSpec({
       spec,
       trigger: "cli",
       baseUrlOverride: args.baseUrl,
+      providerOverride: args.provider,
       onStepLog: (step) => {
         if (step.type === "thinking") return; // less noisy
         process.stdout.write(`  · [${step.type}] ${step.description.slice(0, 100)}\n`);

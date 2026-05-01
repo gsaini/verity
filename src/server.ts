@@ -33,7 +33,7 @@ app.post("/webhooks/github", (req, res, next) => {
 // --- Manual trigger ---
 app.post("/runs", (req, res, next) => {
   (async () => {
-    const { specId, specPath, baseUrl, async: runAsync = true } = req.body ?? {};
+    const { specId, specPath, baseUrl, provider, async: runAsync = true } = req.body ?? {};
     const idOrPath = specPath ?? specId;
     if (!idOrPath) {
       return res.status(400).json({ error: "specId or specPath is required" });
@@ -45,7 +45,13 @@ app.post("/runs", (req, res, next) => {
 
     if (runAsync) {
       res.status(202).json({ ok: true, queued: spec.id, name: spec.name });
-      runSpec({ spec, trigger: "manual", triggerMeta: { source: "api" }, baseUrlOverride: baseUrl })
+      runSpec({
+        spec,
+        trigger: "manual",
+        triggerMeta: { source: "api" },
+        baseUrlOverride: baseUrl,
+        providerOverride: provider,
+      })
         .then((run) =>
           console.log(`[api] ${run.specName} → ${run.status.toUpperCase()} (${run.id})`),
         )
@@ -58,6 +64,7 @@ app.post("/runs", (req, res, next) => {
       trigger: "manual",
       triggerMeta: { source: "api" },
       baseUrlOverride: baseUrl,
+      providerOverride: provider,
     });
     res.json({ ok: true, run });
   })().catch(next);

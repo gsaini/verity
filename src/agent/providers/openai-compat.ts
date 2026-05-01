@@ -1,16 +1,19 @@
 import fs from "node:fs";
 import OpenAI from "openai";
-import { config } from "../../config.js";
+import { type OpenAICompatProfile, config } from "../../config.js";
 import type { StepRecord } from "../../types.js";
 import { SYSTEM_PROMPT, buildUserPrompt } from "../prompts.js";
 import { type ToolContext, browserTools, executeTool } from "../tools.js";
 import type { AgentRunParams, AgentRunResult, LLMProvider } from "./types.js";
 
 /**
- * OpenAI-compatible provider. Works with:
- *   - api.openai.com (gpt-4o, gpt-4o-mini, ...)
- *   - Ollama with OpenAI-compat endpoint (http://localhost:11434/v1)
- *   - LM Studio, vLLM, llama.cpp server, OpenRouter, Together, Groq, ...
+ * OpenAI-compatible provider. One class, three profiles:
+ *   - openai: api.openai.com (gpt-4o, gpt-4o-mini, ...)
+ *   - ollama: local Ollama server (http://localhost:11434/v1)
+ *   - groq:   api.groq.com (llama-3.3-70b-versatile, llama-3.2-90b-vision-preview, ...)
+ *
+ * Also works with LM Studio, vLLM, llama.cpp server, OpenRouter, Together —
+ * configure via the `openai` profile with a custom OPENAI_BASE_URL.
  *
  * Vision feedback after each tool call is sent as a follow-up user message
  * with an image_url block — that's the most portable shape across providers.
@@ -18,12 +21,18 @@ import type { AgentRunParams, AgentRunResult, LLMProvider } from "./types.js";
  * the agent still receives a text URL/title fingerprint and can proceed.
  */
 export class OpenAICompatProvider implements LLMProvider {
-  readonly name = "openai" as const;
+  readonly name: "openai" | "ollama" | "groq";
+  private readonly profile: OpenAICompatProfile;
+
+  constructor(profile: OpenAICompatProfile) {
+    this.profile = profile;
+    this.name = profile.name;
+  }
 
   async runAgent({ spec, session, baseUrl, onStepLog }: AgentRunParams): Promise<AgentRunResult> {
-    const apiKey = config.openaiApiKey || "not-needed-for-local"; // Some local servers ignore this
-    const client = new OpenAI({ apiKey, baseURL: config.openaiBaseUrl });
-    const modelLabel = `${config.openaiModel} (openai @ ${new URL(config.openaiBaseUrl).host})`;
+    const apiKey = this.profile.apiKey || "not-needed-for-local";
+    const client = new OpenAI({ apiKey, baseURL: this.profile.baseUrl });
+    const modelLabel = this.profile.label;
 
     const steps: StepRecord[] = [];
     let stepIndex = 0;
@@ -83,7 +92,7 @@ export class OpenAICompatProvider implements LLMProvider {
 
     for (let turn = 0; turn < config.maxAgentSteps; turn++) {
       const response = await client.chat.completions.create({
-        model: config.openaiModel,
+        model: this.profile.model,
         messages,
         tools,
         tool_choice: "auto",

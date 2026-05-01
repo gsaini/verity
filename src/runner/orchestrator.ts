@@ -12,6 +12,8 @@ export interface RunOptions {
   trigger: RunRecord["trigger"];
   triggerMeta?: Record<string, unknown>;
   baseUrlOverride?: string;
+  /** Optional LLM provider override: "anthropic" | "openai" | "ollama" | "groq". */
+  providerOverride?: string;
   onStepLog?: (step: StepRecord) => void;
 }
 
@@ -48,6 +50,7 @@ export async function runSpec(options: RunOptions): Promise<RunRecord> {
       spec: options.spec,
       session,
       baseUrl,
+      providerOverride: options.providerOverride,
       onStepLog: options.onStepLog,
     });
 

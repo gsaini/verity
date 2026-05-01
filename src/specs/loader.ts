@@ -32,6 +32,7 @@ interface ParsedFrontmatter {
   baseUrl?: string;
   tags?: string[];
   description?: string;
+  provider?: string;
 }
 
 function parseFrontmatter(raw: string): { fm: ParsedFrontmatter; body: string } {
@@ -58,6 +59,7 @@ function parseFrontmatter(raw: string): { fm: ParsedFrontmatter; body: string } 
     if (key === "name") fm.name = value;
     else if (key === "baseUrl") fm.baseUrl = value;
     else if (key === "description") fm.description = value;
+    else if (key === "provider") fm.provider = value;
   }
   return { fm, body };
 }
@@ -120,6 +122,7 @@ export function parseSpec(raw: string, filePath?: string): TestSpec {
     name,
     description,
     baseUrl: fm.baseUrl,
+    provider: fm.provider,
     steps,
     expectations,
     tags: fm.tags,

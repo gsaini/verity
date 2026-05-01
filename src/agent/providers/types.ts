@@ -22,6 +22,6 @@ export interface AgentRunResult {
 }
 
 export interface LLMProvider {
-  readonly name: "anthropic" | "openai";
+  readonly name: "anthropic" | "openai" | "ollama" | "groq";
   runAgent(params: AgentRunParams): Promise<AgentRunResult>;
 }

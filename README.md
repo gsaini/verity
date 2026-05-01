@@ -142,11 +142,33 @@ Spec selection by event:
 
 ## Choosing an LLM provider
 
-Set `LLM_PROVIDER` in `.env` to switch backends. The agent's behavior, tool surface, and reports are identical across providers.
+Four named profiles ship out of the box: **anthropic**, **openai**, **ollama**, **groq**. The agent's behavior, tool surface, and reports are identical across all four — only the backend changes.
 
-### Anthropic (recommended for production)
+### Provider selection — three places, in priority order
 
-Best vision quality, prompt caching across runs, adaptive thinking.
+1. **CLI flag** — wins everything: `pnpm test specs/foo.md --provider ollama`
+2. **Spec frontmatter** — per-test override: `provider: groq` in the YAML header
+3. **`LLM_PROVIDER` env var** — your default
+
+```bash
+# Run one spec on Ollama for a quick local check
+pnpm test specs/login.spec.md --provider ollama
+
+# Run another on Groq for sub-second cloud inference
+pnpm test specs/checkout.spec.md --provider groq
+
+# Per-spec override in frontmatter (no flag needed)
+# ---
+# name: Pricing page
+# provider: anthropic   # always run this one on Claude
+# ---
+```
+
+### Provider profiles
+
+#### Anthropic — production-grade
+
+Best vision quality, prompt caching across runs, adaptive thinking. Use this for CI signal you trust.
 
 ```env
 LLM_PROVIDER=anthropic
@@ -155,7 +177,7 @@ ANTHROPIC_MODEL=claude-opus-4-7   # or claude-sonnet-4-6, claude-haiku-4-5
 ANTHROPIC_EFFORT=high             # low | medium | high | max
 ```
 
-### OpenAI
+#### OpenAI — flexible cloud
 
 ```env
 LLM_PROVIDER=openai
@@ -164,25 +186,50 @@ OPENAI_BASE_URL=https://api.openai.com/v1
 OPENAI_MODEL=gpt-4o
 ```
 
-### Local models via Ollama (free, no API key)
+The same `openai` profile works for any OpenAI-compatible endpoint — **LM Studio**, **vLLM**, **llama.cpp server**, **OpenRouter**, **Together** — just change `OPENAI_BASE_URL` + `OPENAI_MODEL`.
 
-Install [Ollama](https://ollama.com), pull a vision-capable model with tool use, then point us at its OpenAI-compatible endpoint:
-
-```bash
-ollama pull qwen2.5vl
-ollama serve   # exposes http://localhost:11434
-```
+#### Ollama — free, local, offline
 
 ```env
-LLM_PROVIDER=openai
-OPENAI_API_KEY=ollama
-OPENAI_BASE_URL=http://localhost:11434/v1
-OPENAI_MODEL=qwen2.5vl
+LLM_PROVIDER=ollama
+OLLAMA_BASE_URL=http://localhost:11434/v1
+OLLAMA_MODEL=qwen2.5vl
+OLLAMA_API_KEY=ollama   # any string; Ollama ignores it
 ```
 
-The same shape works for **LM Studio**, **vLLM**, **llama.cpp server**, **OpenRouter**, **Together**, **Groq**, etc. — just change `OPENAI_BASE_URL` and `OPENAI_MODEL`.
+Setup:
 
-> **Note on local models:** UI testing requires both vision and reliable tool use. Most small open models struggle with this. As of late 2025, the best zero-cost path is `qwen2.5vl` (7B+) or `llama3.2-vision` for non-tool-use specs. Cloud Claude/GPT remains the most reliable for production CI.
+```bash
+brew install ollama   # or download from https://ollama.com
+ollama pull qwen2.5vl
+ollama serve          # exposes http://localhost:11434
+pnpm test specs/login.spec.md --provider ollama
+```
+
+#### Groq — fast cloud inference
+
+Sub-second responses, generous free tier. Best for high-volume smoke runs where speed beats marginal quality.
+
+```env
+LLM_PROVIDER=groq
+GROQ_API_KEY=gsk_...
+GROQ_BASE_URL=https://api.groq.com/openai/v1
+GROQ_MODEL=llama-3.3-70b-versatile
+```
+
+Get a key at <https://console.groq.com>.
+
+### Picking the right one
+
+| Use case                                                    | Recommended provider                       |
+| ----------------------------------------------------------- | ------------------------------------------ |
+| CI on every PR, want trusted signal                         | **anthropic** (Sonnet 4.6 or Opus 4.7)     |
+| Local dev, no internet, no spend                            | **ollama** (qwen2.5vl)                     |
+| High-volume smoke runs, latency matters                     | **groq** (llama-3.3-70b-versatile)         |
+| Need OpenAI-specific feature or already have OpenAI billing | **openai** (gpt-4o)                        |
+| Switch per-spec: heavy specs on Claude, smoke specs on Groq | mix via frontmatter `provider:`            |
+
+> **Note on local / open-weight models:** UI testing requires both vision *and* reliable structured tool use. As of late 2026, `qwen2.5vl` (7B+) is the best free path for vision-capable tool use. For tool-use only (no vision), Groq's `llama-3.3-70b-versatile` is cheap and very fast. Hosted Claude or GPT-4o remains the most reliable for production CI.
 
 ## How it works
 
